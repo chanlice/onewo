@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>幸福社区 · 产品+服务体系</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #00d4ff;
+    --primary-dim: rgba(0,212,255,0.15);
+    --accent: #7c3aed;
+    --accent2: #06b6d4;
+    --bg-dark: #0a0e1a;
+    --bg-card: rgba(10,14,30,0.7);
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --border: rgba(0,212,255,0.12);
+    --glow: 0 0 40px rgba(0,212,255,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ===== 粒子画布 ===== */
+  #particles-canvas {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* ===== 网格背景叠加 ===== */
+  .grid-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* ===== 全局容器 ===== */
+  .container { position: relative; z-index: 1; max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+
+  /* ===== HERO ===== */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    padding: 80px 20px 60px; position: relative;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 800px; height: 600px;
+    background: radial-gradient(ellipse, rgba(124,58,237,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block; padding: 8px 28px;
+    border: 1px solid var(--border); border-radius: 999px;
+    font-size: 13px; letter-spacing: 3px; color: var(--primary);
+    background: rgba(0,212,255,0.06);
+    margin-bottom: 32px; backdrop-filter: blur(10px);
+    animation: fadeUp 1s ease forwards;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 7vw, 82px); font-weight: 900;
+    background: linear-gradient(135deg, #fff 0%, var(--primary) 45%, var(--accent) 75%, #fff 100%);
+    background-size: 200% 200%; -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; background-clip: text;
+    animation: gradientShift 6s ease infinite, fadeUp 1s ease 0.2s forwards;
+    opacity: 0; line-height: 1.2; margin-bottom: 16px;
+  }
+  @keyframes gradientShift {
+    0%,100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .hero-sub {
+    font-size: clamp(16px, 2vw, 22px); color: var(--text-dim);
+    max-width: 640px; margin-bottom: 48px;
+    animation: fadeUp 1s ease 0.4s forwards; opacity: 0;
+  }
+  .hero-stats-row {
+    display: flex; gap: 48px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 1s ease 0.6s forwards; opacity: 0;
+  }
+  .hero-stat { text-align: center; }
+  .hero-stat-num {
+    font-size: 36px; font-weight: 700; color: var(--primary);
+    letter-spacing: 1px;
+  }
+  .hero-stat-label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== 导航指示器 ===== */
+  .scroll-indicator {
+    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    color: var(--text-dim); font-size: 12px; letter-spacing: 2px;
+    animation: bounce 2s ease infinite;
+  }
+  .scroll-indicator .arrow { width: 18px; height: 26px; border: 2px solid var(--text-dim); border-radius: 9px; position: relative; }
+  .scroll-indicator .arrow::after {
+    content: ''; position: absolute; top: 5px; left: 50%; transform: translateX(-50%);
+    width: 3px; height: 6px; background: var(--primary); border-radius: 2px;
+    animation: scrollDot 2s ease infinite;
+  }
+  @keyframes scrollDot {
+    0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ===== 通用节标题 ===== */
+  .section { padding: 100px 0; }
+  .section-header {
+    text-align: center; margin-bottom: 64px;
+  }
+  .section-tag {
+    display: inline-block; padding: 4px 16px;
+    border: 1px solid var(--border); border-radius: 99px;
+    font-size: 11px; letter-spacing: 2px; color: var(--primary);
+    background: rgba(0,212,255,0.05);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: clamp(28px, 4vw, 44px); font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .section-desc {
+    color: var(--text-dim); font-size: 15px; max-width: 680px; margin: 0 auto;
+  }
+
+  /* ===== 动画入口 ===== */
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.25,0.46,0.25,0.98);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ===== 产品板块卡片 ===== */
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .product-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 28px 32px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s ease;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .product-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    opacity: 0; transition: opacity 0.4s ease;
+  }
+  .product-card:hover {
+    border-color: rgba(0,212,255,0.35);
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,212,255,0.06);
+  }
+  .product-card:hover::before { opacity: 1; }
+  .product-card .icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 18px;
+    background: var(--primary-dim);
+    border: 1px solid rgba(0,212,255,0.15);
+  }
+  .product-card h3 {
+    font-size: 19px; font-weight: 600; margin-bottom: 8px;
+  }
+  .product-card .subtitle {
+    font-size: 13px; color: var(--primary); margin-bottom: 16px;
+    letter-spacing: 0.5px;
+  }
+  .product-card p {
+    font-size: 14px; color: var(--text-dim); line-height: 1.8;
+    margin-bottom: 16px;
+  }
+  .product-card .tag-list {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .product-card .tag-list span {
+    padding: 4px 13px; border-radius: 99px;
+    font-size: 12px; background: rgba(0,212,255,0.07);
+    border: 1px solid rgba(0,212,255,0.1);
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+  }
+  .product-card .tag-list span:hover {
+    background: rgba(0,212,255,0.15);
+    color: var(--primary);
+    border-color: rgba(0,212,255,0.3);
+  }
+
+  /* ===== 数据亮点 ===== */
+  .data-section {
+    background: linear-gradient(135deg, rgba(124,58,237,0.04), rgba(0,212,255,0.04));
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 32px; text-align: center;
+  }
+  .data-item { padding: 20px 0; }
+  .data-item .num {
+    font-size: clamp(34px, 4vw, 52px); font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.2;
+  }
+  .data-item .num-suffix {
+    font-size: 18px; font-weight: 600;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .data-item .label {
+    font-size: 13px; color: var(--text-dim); margin-top: 6px;
+  }
+
+  /* ===== 服务能力 ===== */
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+  .service-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s ease;
+  }
+  .service-card:hover {
+    border-color: rgba(124,58,237,0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(124,58,237,0.05);
+  }
+  .service-card .num-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(124,58,237,0.12);
+    color: var(--accent); font-size: 14px; font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .service-card h4 {
+    font-size: 17px; font-weight: 600; margin-bottom: 10px;
+  }
+  .service-card ul {
+    list-style: none; padding: 0;
+  }
+  .service-card ul li {
+    font-size: 13px; color: var(--text-dim);
+    padding: 5px 0; position: relative; padding-left: 16px;
+  }
+  .service-card ul li::before {
+    content: ''; position: absolute; left: 0; top: 13px;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); opacity: 0.5;
+  }
+
+  /* ===== 三端一体 ===== */
+  .triple-section {
+    background: linear-gradient(135deg, rgba(0,212,255,0.03), rgba(124,58,237,0.03));
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .triple-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 860px) { .triple-grid { grid-template-columns: 1fr; } }
+  .triple-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 22px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s ease;
+    text-align: center;
+  }
+  .triple-card:hover {
+    border-color: rgba(0,212,255,0.3);
+    transform: translateY(-4px);
+  }
+  .triple-card .role {
+    font-size: 12px; letter-spacing: 2px; color: var(--primary);
+    margin-bottom: 4px;
+  }
+  .triple-card h4 {
+    font-size: 21px; font-weight: 700; margin-bottom: 4px;
+  }
+  .triple-card .slogan {
+    font-size: 13px; color: var(--accent2); margin-bottom: 18px;
+  }
+  .triple-card .feat { text-align: left; }
+  .triple-card .feat-item {
+    display: flex; gap: 10px; padding: 6px 0;
+    font-size: 13px; color: var(--text-dim);
+    align-items: flex-start;
+  }
+  .triple-card .feat-item .idx {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 4px;
+    background: rgba(0,212,255,0.09);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: var(--primary); font-weight: 600;
+    margin-top: 2px;
+  }
+  .triple-footer {
+    text-align: center; margin-top: 32px;
+    font-size: 15px; color: var(--primary);
+    letter-spacing: 1px;
+  }
+
+  /* ===== 营销矩阵 ===== */
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .matrix-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    backdrop-filter: blur(12px);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .matrix-card::after {
+    content: ''; position: absolute; right: -20px; top: -20px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(0,212,255,0.04), transparent);
+    pointer-events: none;
+  }
+  .matrix-card:hover {
+    border-color: rgba(0,212,255,0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,212,255,0.04);
+  }
+  .matrix-card .pack-name {
+    font-size: 17px; font-weight: 600; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .matrix-card .pack-name .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary); flex-shrink: 0;
+  }
+  .matrix-card .pack-combo {
+    display: flex; flex-wrap: wrap; gap: 8px;
+  }
+  .matrix-card .pack-combo span {
+    padding: 4px 12px; border-radius: 99px;
+    font-size: 12px; background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.08);
+    color: var(--text-dim);
+  }
+
+  /* ===== 底部 ===== */
+  .footer {
+    text-align: center; padding: 64px 20px;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+  .footer h2 {
+    font-size: 28px; font-weight: 700; margin-bottom: 12px;
+  }
+  .footer p {
+    color: var(--text-dim); font-size: 14px; max-width: 480px;
+    margin: 0 auto 24px;
+  }
+  .footer .cta-line {
+    display: inline-block; padding: 10px 32px;
+    border: 1px solid var(--border); border-radius: 99px;
+    font-size: 14px; color: var(--primary);
+    background: rgba(0,212,255,0.04);
+    letter-spacing: 1px;
+  }
+
+  /* ===== 响应式微调 ===== */
+  @media (max-width: 540px) {
+    .section { padding: 56px 0; }
+    .products-grid { grid-template-columns: 1fr; }
+    .hero-stats-row { gap: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+<div class="grid-overlay"></div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-badge">幸福社区 2026 · 合作伙伴大会</div>
+  <h1>深耕邻里沃土<br>共建幸福社区</h1>
+  <p class="hero-sub">从广告位到线上矩阵，从IP活动到线下门店，从私域到服务——五大产品，一站配齐</p>
+  <div class="hero-stats-row">
+    <div class="hero-stat"><div class="hero-stat-num">75W+</div><div class="hero-stat-label">广告类资源点位</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">70W+</div><div class="hero-stat-label">便民设施资源</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">5.4W+</div><div class="hero-stat-label">场地空间资源</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">1570万</div><div class="hero-stat-label">住这儿注册用户</div></div>
+    <div class="hero-stat"><div class="hero-stat-num">1052W+</div><div class="hero-stat-label">管家关联用户</div></div>
+  </div>
+  <div class="scroll-indicator">
+    <div class="arrow"></div>
+    <span>向下探索</span>
+  </div>
+</section>
+
+<!-- ===== 五大产品 ===== -->
+<div class="container">
+  <section class="section" id="products">
+    <div class="section-header reveal">
+      <div class="section-tag">PRODUCTS</div>
+      <h2 class="section-title">五大产品板块</h2>
+      <p class="section-desc">覆盖社区曝光、线上营销、活动营造、社区商业、私域运营全场景</p>
+    </div>
+    <div class="products-grid">
+
+      <!-- 1. 社区曝光 -->
+      <div class="product-card reveal">
+        <div class="icon">📡</div>
+        <h3>社区曝光</h3>
+        <div class="subtitle">线下媒体资源矩阵</div>
+        <p>归家动线全场景点位，覆盖用户每日必经之路。自营电梯媒体构建画面制作、点位上刊、监播、下刊全链路直营模式。</p>
+        <div class="tag-list">
+          <span>电梯轿厢框架 35W+</span>
+          <span>液晶广告 23W+</span>
+          <span>灯箱道闸 5W+</span>
+          <span>充电桩换电柜 60W+</span>
+          <span>快递柜售货机 8W+</span>
+          <span>摆展铺位 2W+</span>
+          <span>经营用房泳池 1W+</span>
+        </div>
+      </div>
+
+      <!-- 2. 线上营销 -->
+      <div class="product-card reveal">
+        <div class="icon">📱</div>
+        <h3>线上营销</h3>
+        <div class="subtitle">数字触达矩阵</div>
+        <p>住这儿APP已接入5083个社区、1570万注册用户；邻居公众号320万+粉丝；超1万名管家触达1052W+关联用户。</p>
+        <div class="tag-list">
+          <span>住这儿APP</span>
+          <span>邻居公众号</span>
+          <span>邻居视频号</span>
+          <span>管家朋友圈</span>
+          <span>社群运营</span>
+          <span>定制长图文</span>
+          <span>有奖互动</span>
+        </div>
+      </div>
+
+      <!-- 3. 活动营造 -->
+      <div class="product-card reveal">
+        <div class="icon">🎪</div>
+        <h3>活动营造</h3>
+        <div class="subtitle">三大IP活动矩阵</div>
+        <p>朴里节（每年9月，20城开幕，800场市集）、健康居住节（5·28，6800万曝光，600+场市集）、年终福利节（620场市集，5800万+GMV）。</p>
+        <div class="tag-list">
+          <span>朴里节</span>
+          <span>健康居住节</span>
+          <span>年终福利节</span>
+          <span>百家宴</span>
+          <span>朴里市集</span>
+          <span>暖冬市集</span>
+          <span>民俗体验</span>
+        </div>
+      </div>
+
+      <!-- 4. 社区商业 -->
+      <div class="product-card reveal">
+        <div class="icon">🛒</div>
+        <h3>社区商业</h3>
+        <div class="subtitle">云朵会员商城</div>
+        <p>"缴费即积分—积分即权益—消费即返利"闭环生态。含云朵积分体系、会员权益购买、万享+会员卡、消费返物业费四大引擎。</p>
+        <div class="tag-list">
+          <span>云朵积分</span>
+          <span>会员权益</span>
+          <span>万享+会员卡</span>
+          <span>消费返物业费</span>
+          <span>家政服务</span>
+          <span>研选家</span>
+          <span>朴邻</span>
+        </div>
+      </div>
+
+      <!-- 5. 私域运营 -->
+      <div class="product-card reveal">
+        <div class="icon">🤝</div>
+        <h3>私域运营</h3>
+        <div class="subtitle">管家深度服务</div>
+        <p>每500户配置一名专属生活管家，六大类MOT及23项核心触点，覆盖移动互联、场所服务、回家之路、休闲漫步、设施景观、入户服务全旅程。</p>
+        <div class="tag-list">
+          <span>管家朋友圈</span>
+          <span>管家福利官</span>
+          <span>管家上门</span>
+          <span>节庆福利</span>
+          <span>入户沟通访谈</span>
+          <span>社群推广</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- ===== 数据亮点 ===== -->
+<section class="data-section section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">DATA HIGHLIGHTS</div>
+      <h2 class="section-title">资源规模一览</h2>
+    </div>
+    <div class="data-grid reveal">
+      <div class="data-item"><div class="num">75<span class="num-suffix">W+</span></div><div class="label">广告类资源点位</div></div>
+      <div class="data-item"><div class="num">70<span class="num-suffix">W+</span></div><div class="label">便民设施资源</div></div>
+      <div class="data-item"><div class="num">5.4<span class="num-suffix">W+</span></div><div class="label">场地空间资源</div></div>
+      <div class="data-item"><div class="num">56</div><div class="label">覆盖城市</div></div>
+      <div class="data-item"><div class="num">16<span class="num-suffix">万部</span></div><div class="label">全量电梯</div></div>
+      <div class="data-item"><div class="num">79<span class="num-suffix">W+</span></div><div class="label">梯媒点位生态池</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 服务能力体系 ===== -->
+<div class="container">
+  <section class="section" id="services">
+    <div class="section-header reveal">
+      <div class="section-tag">SERVICES</div>
+      <h2 class="section-title">服务能力体系</h2>
+      <p class="section-desc">资源 × 服务 × 价值三层结构，一站式品牌整合营销服务</p>
+    </div>
+    <div class="service-grid">
+      <div class="service-card reveal">
+        <div class="num-badge">01</div>
+        <h4>战略规划</h4>
+        <ul>
+          <li>社区市场调研与数据分析</li>
+          <li>行业经验与趋势洞察</li>
+          <li>私域数据沉淀与应用</li>
+        </ul>
+      </div>
+      <div class="service-card reveal">
+        <div class="num-badge">02</div>
+        <h4>创意策划</h4>
+        <ul>
+          <li>媒介策略制定</li>
+          <li>活动策划与执行</li>
+          <li>创意定制与内容生产</li>
+        </ul>
+      </div>
+      <div class="service-card reveal">
+        <div class="num-badge">03</div>
+        <h4>渠道整合</h4>
+        <ul>
+          <li>广告渠道投放管理</li>
+          <li>内部业务联动协同</li>
+          <li>外部渠道资源整合</li>
+        </ul>
+      </div>
+      <div class="service-card reveal">
+        <div class="num-badge">04</div>
+        <h4>开发设计</h4>
+        <ul>
+          <li>可投放点位可视化呈现</li>
+          <li>资源地图可视化管理</li>
+          <li>销售档期管理与排期</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== 住这儿街角好店·三端一体 ===== -->
+<section class="triple-section section">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">TRIPLE-END INTEGRATION</div>
+      <h2 class="section-title">住这儿街角好店 · 三端一体</h2>
+      <p class="section-desc">业主找得到 → 商户卖得动 → 平台兜得牢</p>
+    </div>
+    <div class="triple-grid">
+      <div class="triple-card reveal">
+        <div class="role">TO C</div>
+        <h4>业主端</h4>
+        <div class="slogan">找店 · 领券 · 下单</div>
+        <div class="feat">
+          <div class="feat-item"><span class="idx">01</span>优惠团购 — 套餐在线购买</div>
+          <div class="feat-item"><span class="idx">02</span>地图找店 — 按位置发现店铺</div>
+          <div class="feat-item"><span class="idx">03</span>话题推送 — 高频话题直达</div>
+          <div class="feat-item"><span class="idx">04</span>社区活动 — 定期组建活动</div>
+        </div>
+      </div>
+      <div class="triple-card reveal">
+        <div class="role">TO B</div>
+        <h4>商户端</h4>
+        <div class="slogan">经营 · 营销 · 收款</div>
+        <div class="feat">
+          <div class="feat-item"><span class="idx">01</span>数据管理 — 曝光销量核销实时看</div>
+          <div class="feat-item"><span class="idx">02</span>营销管理 — 活动广告团购一键上架</div>
+          <div class="feat-item"><span class="idx">03</span>物业服务 — 缴费维修送水在线申请</div>
+          <div class="feat-item"><span class="idx">04</span>收款工具 — 福礼支付音箱码牌收款</div>
+        </div>
+      </div>
+      <div class="triple-card reveal">
+        <div class="role">PLATFORM</div>
+        <h4>运营端</h4>
+        <div class="slogan">跑流程 · 盯数据 · 管门店</div>
+        <div class="feat">
+          <div class="feat-item"><span class="idx">01</span>数据看板 — 活跃及销售情况查看</div>
+          <div class="feat-item"><span class="idx">02</span>入驻审核 — 资质审核与服务开通</div>
+          <div class="feat-item"><span class="idx">03</span>门店管理 — 选品与活动排期</div>
+          <div class="feat-item"><span class="idx">04</span>营销管理 — 举办特色权益活动</div>
+        </div>
+      </div>
+    </div>
+    <div class="triple-footer reveal">三端一体闭环 · 业主找得到 → 商户卖得动 → 平台兜得牢</div>
+  </div>
+</section>
+
+<!-- ===== 6+1 营销矩阵 ===== -->
+<div class="container">
+  <section class="section" id="matrix">
+    <div class="section-header reveal">
+      <div class="section-tag">MARKETING MATRIX</div>
+      <h2 class="section-title">「6+1」营销矩阵</h2>
+      <p class="section-desc">覆盖造势、获客、转化全流程，每包都是清晰的交付清单</p>
+    </div>
+    <div class="matrix-grid">
+      <div class="matrix-card reveal">
+        <div class="pack-name"><span class="dot"></span>品牌曝光营销包</div>
+        <div class="pack-combo">
+          <span>产品联名</span><span>活动策划</span>
+        </div>
+      </div>
+      <div class="matrix-card reveal">
+        <div class="pack-name"><span class="dot" style="background:var(--accent)"></span>社区活动全案包</div>
+        <div class="pack-combo">
+          <span>品牌展位</span><span>梯媒广告</span><span>入户体验</span><span>社群推广</span>
+        </div>
+      </div>
+      <div class="matrix-card reveal">
+        <div class="pack-name"><span class="dot" style="background:#f59e0b"></span>邻里市集营销包</div>
+        <div class="pack-combo">
+          <span>宣传栏</span><span>梯媒</span><span>易拉宝</span><span>管家朋友圈同步曝光</span>
+        </div>
+      </div>
+      <div class="matrix-card reveal">
+        <div class="pack-name"><span class="dot" style="background:#10b981"></span>家服体验营销包</div>
+        <div class="pack-combo">
+          <span>管家1V1入户讲解</span><span>摆展打卡</span><span>服务号专题</span>
+        </div>
+      </div>
+      <div class="matrix-card reveal">
+        <div class="pack-name"><span class="dot" style="background:#ec4899"></span>种草社群营销包</div>
+        <div class="pack-combo">
+          <span>社群活动</span><span>推文投票</span><span>用户画像洞察报告</span>
+        </div>
+      </div>
+      <div class="matrix-card reveal">
+        <div class="pack-name"><span class="dot" style="background:#6366f1"></span>便民设施场地包</div>
+        <div class="pack-combo">
+          <span>便民设施</span><span>幸福驿站</span><span>梯媒广告</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== 底部 ===== -->
+<footer class="footer">
+  <div class="container">
+    <h2>单点采买，或打包组合</h2>
+    <p>交付清单清晰，即选即用</p>
+    <div class="cta-line">深耕邻里沃土 · 共建幸福社区</div>
+  </div>
+</footer>
+
+<script>
+// ===== 粒子系统 =====
+(function(){
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles = [];
+  const COUNT = 110;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() { this.reset(); }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.vx = (Math.random() - 0.5) * 0.35;
+      this.vy = (Math.random() - 0.5) * 0.35;
+      this.r = Math.random() * 1.8 + 0.6;
+      this.alpha = Math.random() * 0.5 + 0.15;
+    }
+    update() {
+      this.x += this.vx; this.y += this.vy;
+      if (this.x < 0 || this.x > w) this.vx *= -1;
+      if (this.y < 0 || this.y > h) this.vy *= -1;
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,212,255,${this.alpha})`;
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < COUNT; i++) particles.push(new Particle());
+
+  let mouse = { x: null, y: null };
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+  window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+
+  function drawLines() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0,212,255,${0.035 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function drawMouseConnections() {
+    if (mouse.x === null) return;
+    for (const p of particles) {
+      const dx = p.x - mouse.x;
+      const dy = p.y - mouse.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 200) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(0,212,255,${0.045 * (1 - dist / 200)})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    for (const p of particles) { p.update(); p.draw(); }
+    drawLines();
+    drawMouseConnections();
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+
+// ===== 滚动渐入检测 =====
+(function(){
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+})();
+</script>
+</body>
+</html>
